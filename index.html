@@ -1,99 +1,110 @@
 <!doctype html>
-<html lang="ja">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Kaizen Japanese - Vocabulary Trainer</title>
-  <link rel="stylesheet" href="style.css"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kaizen Japanese</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
   <header class="topbar">
     <div class="brand">
-      <div class="brand__icon">改</div>
-      <div class="brand__text">
-        <div class="brand__title">Kaizen Japanese</div>
-        <div class="brand__sub">Vocabulary Trainer</div>
+      <div class="logo">改</div>
+      <div class="brandText">
+        <div class="brandTitle">Kaizen Japanese</div>
+        <div class="brandSub">Vocabulary Trainer</div>
       </div>
     </div>
 
-    <div class="topbar__right">
-      <button id="toggleTheme" class="chip" title="Toggle theme">🌙</button>
-      <button id="togglePremium" class="chip chip--premium">Premium: <span id="premiumState">OFF</span></button>
+    <div class="topActions">
+      <button id="toggleTheme" class="pillBtn" title="Toggle theme">🌙</button>
+      <button id="togglePremium" class="pillBtn premiumBtn" title="Premium toggle">
+        Premium: <span id="premiumLabel">OFF</span>
+      </button>
     </div>
   </header>
 
   <main class="wrap">
-
     <section class="controls">
       <div class="tabs">
         <button class="tab active" data-tab="words">Words</button>
-        <button class="tab" data-tab="saved">Saved <span id="savedCount" class="badge">0</span></button>
+        <button class="tab" data-tab="saved">Saved <span class="count" id="savedCount">0</span></button>
       </div>
 
       <div class="filters">
-        <input id="searchInput" class="input" placeholder="Search: 漢字 / ひらがな / meaning" />
+        <input id="searchInput" class="search" placeholder="Search: kanji / reading / meaning" />
 
         <select id="levelFilter" class="select">
-          <option value="ALL">All levels</option>
+          <option value="All">All levels</option>
           <option value="N4">N4</option>
           <option value="N3">N3</option>
           <option value="N2">N2</option>
         </select>
 
+        <select id="posFilter" class="select">
+          <option value="All">All POS</option>
+        </select>
+
         <select id="sortBy" class="select">
-          <option value="LEVEL">Sort: Level</option>
-          <option value="KANJI">Sort: Kanji</option>
-          <option value="MEANING">Sort: Meaning</option>
+          <option value="Level">Sort: Level</option>
+          <option value="A-Z">Sort: A-Z</option>
+          <option value="Saved">Sort: Saved</option>
         </select>
       </div>
     </section>
 
     <section id="grid" class="grid"></section>
 
+    <section id="emptyState" class="empty hidden">
+      <div class="emptyTitle">No results</div>
+      <div class="emptySub">Try changing filters or searching differently.</div>
+    </section>
   </main>
 
-  <!-- Modal (Word Detail like your 2nd screenshot) -->
-  <div id="modal" class="kz-modal hidden" aria-hidden="true">
-    <div class="kz-modal__backdrop" data-close></div>
+  <!-- MODAL -->
+  <div id="modal" class="modal hidden" aria-hidden="true">
+    <div class="modalOverlay" data-close="1"></div>
 
-    <div class="kz-modal__panel" role="dialog" aria-modal="true" aria-labelledby="kzModalTitle">
-      <button class="kz-modal__x" aria-label="Close" data-close>✕</button>
+    <div class="modalCard" role="dialog" aria-modal="true">
+      <div class="modalTop">
+        <div class="modalTitleArea">
+          <div class="modalTitleRow">
+            <div class="modalKanji" id="mKanji">—</div>
+            <div class="chips">
+              <span class="chip" id="mPosChip">POS</span>
+              <span class="chip chipLevel" id="mLevelChip">N?</span>
+              <span class="chip chipPremium hidden" id="mPremiumChip">Premium</span>
+            </div>
+          </div>
 
-      <div class="kz-modal__header">
-        <div class="kz-modal__titlewrap">
-          <div class="kz-modal__kanji" id="kzModalTitle">競争</div>
-          <div class="kz-modal__reading" id="kzModalReading">きょうそう</div>
-          <div class="kz-modal__meaning" id="kzModalMeaning">competition</div>
+          <div class="modalReading" id="mReading">—</div>
+          <div class="modalMeaning" id="mMeaning">—</div>
         </div>
 
-        <div class="kz-modal__badges">
-          <span class="kz-badge" id="kzModalLevel">N3</span>
-          <span class="kz-badge kz-badge--soft" id="kzModalType">名詞</span>
+        <button class="iconBtn" id="closeModal" title="Close">✕</button>
+      </div>
+
+      <div class="modalBody">
+        <div class="section">
+          <div class="sectionTitle">WORD TYPE</div>
+          <div class="cardLine" id="mPosLine">—</div>
+        </div>
+
+        <div class="section">
+          <div class="sectionTitle">EXAMPLE SENTENCES</div>
+          <div id="mExamples" class="exampleList"></div>
+        </div>
+
+        <div class="section">
+          <div class="sectionTitle">STUDY TIPS</div>
+          <ul id="mTips" class="tips"></ul>
         </div>
       </div>
 
-      <div class="kz-modal__body">
-        <div class="kz-section">
-          <div class="kz-section__title">WORD TYPE</div>
-          <div class="kz-pill" id="kzModalTypePill">Noun</div>
-        </div>
-
-        <div class="kz-section">
-          <div class="kz-section__title">EXAMPLE SENTENCES</div>
-          <div class="kz-examples" id="kzModalExamples"></div>
-        </div>
-
-        <div class="kz-section">
-          <div class="kz-section__title">STUDY TIPS</div>
-          <ul class="kz-tips" id="kzModalTips"></ul>
-        </div>
-      </div>
-
-      <div class="kz-modal__footer">
-        <button class="kz-btn kz-btn--primary" id="kzModalSaveBtn">Save Word</button>
-        <button class="kz-btn" id="kzModalCopyBtn">Copy</button>
-        <button class="kz-btn kz-btn--ghost" data-close>Close</button>
+      <div class="modalFooter">
+        <button id="modalSave" class="btn primary">☆ Save Word</button>
+        <button id="modalCopy" class="btn">Copy</button>
+        <button id="modalClose" class="btn ghost">Close</button>
       </div>
     </div>
   </div>

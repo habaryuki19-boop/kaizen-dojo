@@ -1,4 +1,94 @@
-/** ---------- HELPERS ---------- **/
+/**********************************************************
+ * Kaizen Japanese (HTML/CSS/JS) - 50 words
+ * - POS tags (English) + filters
+ * - Modal details (better examples) + save + copy
+ **********************************************************/
+
+/**********************************************************
+ * 50 WORDS (mix of N4/N3/N2) - you can replace anytime
+ **********************************************************/
+const RAW_WORD_LIST = `
+## N4
+1. 出来る (できる) - to be able to, can do
+2. 勉強 (べんきょう) - study, learning
+3. 多分 (たぶん) - probably, perhaps
+4. 簡単 (かんたん) - simple, easy
+5. 毎日 (まいにち) - every day
+6. 問題 (もんだい) - problem, question
+7. 気持ち (きもち) - feeling, mood
+8. 考える (かんがえる) - to think, consider
+9. 思う (おもう) - to think, feel
+10. 話す (はなす) - to speak, talk
+11. 聞く (きく) - to listen, hear
+12. 読む (よむ) - to read
+13. 書く (かく) - to write
+14. 見る (みる) - to see, watch
+15. 食べる (たべる) - to eat
+16. 飲む (のむ) - to drink
+17. 行く (いく) - to go
+18. 来る (くる) - to come
+19. 帰る (かえる) - to return, go home
+20. 教える (おしえる) - to teach, tell
+
+## N3
+21. 意識 (いしき) - consciousness, awareness
+22. 美しい (うつくしい) - beautiful
+23. 必要 (ひつよう) - necessary, essential
+24. 素晴らしい (すばらしい) - wonderful, splendid
+25. 理解 (りかい) - understanding, comprehension
+26. 例えば (たとえば) - for example
+27. 挑戦 (ちょうせん) - challenge
+28. 変化 (へんか) - change, transformation
+29. 経験 (けいけん) - experience
+30. 実際 (じっさい) - actually, in fact
+31. 成功 (せいこう) - success
+32. 失敗 (しっぱい) - failure, mistake
+33. 努力 (どりょく) - effort, endeavor
+34. 重要 (じゅうよう) - important, significant
+35. 複雑 (ふくざつ) - complex, complicated
+36. 解決 (かいけつ) - solution, resolution
+37. 環境 (かんきょう) - environment
+38. 条件 (じょうけん) - condition, terms
+39. 規則 (きそく) - rule, regulation
+40. 責任 (せきにん) - responsibility
+
+## N2
+41. 抽象的 (ちゅうしょうてき) - abstract
+42. 具体的 (ぐたいてき) - concrete, specific
+43. 適切 (てきせつ) - appropriate, suitable
+44. 曖昧 (あいまい) - ambiguous, vague
+45. 概念 (がいねん) - concept, notion
+46. 背景 (はいけい) - background, context
+47. 根拠 (こんきょ) - basis, grounds
+48. 論理 (ろんり) - logic
+49. 主張 (しゅちょう) - assertion, claim
+50. 視点 (してん) - viewpoint, perspective
+`;
+
+/** ---------- STATE ---------- **/
+const STORAGE_KEYS = {
+  SAVED: "kaizen_saved_words_v1",
+  THEME: "kaizen_theme_dark_v1",
+  PREMIUM: "kaizen_premium_on_v1",
+  POS_OVERRIDES: "kaizen_pos_overrides_v1",
+};
+
+const state = {
+  tab: "words",
+  q: "",
+  level: "All",
+  pos: "All",
+  sort: "Level",
+  saved: new Set(),
+  dark: true,
+  premiumOn: false,
+  posOverrides: {},
+  modalWordId: null,
+};
+
+let words = [];
+
+/** ---------- DOM HELPERS ---------- **/
 const byId = (id) => document.getElementById(id);
 
 function escapeHtml(str) {
@@ -10,105 +100,287 @@ function escapeHtml(str) {
     .replaceAll("'", "&#039;");
 }
 
-function capitalize(s) {
-  const str = String(s || "");
-  return str ? str[0].toUpperCase() + str.slice(1) : str;
-}
-
 /** ---------- STORAGE ---------- **/
-const STORAGE_KEYS = {
-  SAVED: "kz_saved_ids_v1",
-  THEME: "kz_theme_dark_v1",
-  PREMIUM: "kz_premium_v1",
-};
-
+function saveSet(key, set) {
+  localStorage.setItem(key, JSON.stringify(Array.from(set)));
+}
 function loadSet(key) {
   try {
-    const raw = localStorage.getItem(key);
-    if (!raw) return new Set();
-    const arr = JSON.parse(raw);
-    return new Set(Array.isArray(arr) ? arr : []);
+    const arr = JSON.parse(localStorage.getItem(key) || "[]");
+    return new Set(arr);
   } catch {
     return new Set();
   }
 }
-function saveSet(key, set) {
-  localStorage.setItem(key, JSON.stringify([...set]));
+function saveBool(key, val) {
+  localStorage.setItem(key, val ? "1" : "0");
 }
-function loadBool(key, fallback = false) {
+function loadBool(key, fallback) {
   const v = localStorage.getItem(key);
   if (v === null) return fallback;
-  return v === "true";
+  return v === "1";
 }
-function saveBool(key, v) {
-  localStorage.setItem(key, v ? "true" : "false");
+function loadJson(key, fallback) {
+  try {
+    return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback));
+  } catch {
+    return fallback;
+  }
+}
+function saveJson(key, obj) {
+  localStorage.setItem(key, JSON.stringify(obj));
 }
 
-/** ---------- DATA (sample - replace with your 236 words) ---------- **/
-const WORDS = [
-  { id: 1, kanji: "意味", reading: "いみ", meaning: "meaning, significance", level: "N4", category: "Noun", premium: false },
-  { id: 2, kanji: "飲む", reading: "のむ", meaning: "to drink", level: "N4", category: "Verb", premium: false },
-  { id: 3, kanji: "競争", reading: "きょうそう", meaning: "competition", level: "N3", category: "Noun", premium: false },
-  { id: 4, kanji: "改善", reading: "かいぜん", meaning: "improvement", level: "N3", category: "Noun", premium: false },
-  { id: 5, kanji: "曖昧", reading: "あいまい", meaning: "ambiguous, vague", level: "N2", category: "Na-adjective", premium: false },
-  { id: 6, kanji: "探求", reading: "たんきゅう", meaning: "pursuit", level: "N2", category: "Noun", premium: true },
-];
+/** ---------- POS GUESS (English) ---------- **/
+function guessPOS(kanji) {
+  const s = String(kanji);
 
-/** ---------- STATE ---------- **/
-const state = {
-  tab: "words",      // words | saved
-  q: "",
-  level: "ALL",
-  sort: "LEVEL",     // LEVEL | KANJI | MEANING
-  dark: true,
-  premiumOn: false,
-  saved: new Set(),
-  selected: null,
-};
+  // expressions
+  if (s === "について" || s === "に関して" || s === "に対して") return "Expression";
+
+  // common adverbs
+  const adverbs = new Set(["むしろ", "極めて", "次第に", "一方", "例えば", "多分", "実際"]);
+  if (adverbs.has(s)) return "Adverb";
+
+  // i-adjective
+  if (s.endsWith("い") && s.length >= 2) return "Adjective";
+
+  // Kanji + okurigana -> likely verb
+  if (/[ぁ-んー]$/.test(s)) return "Verb";
+
+  return "Noun";
+}
+
+/** ---------- EXAMPLES (better quality) ---------- **/
+function buildExamples(kanji, reading, meaning, level) {
+  const m = meaning.split(",")[0].trim();
+
+  if (level === "N4") {
+    return [
+      {
+        jp: `今日は${kanji}？`,
+        romaji: `Kyō wa "${reading}"?`,
+        en: `Can you ${m} today?`,
+      },
+      {
+        jp: `毎日${kanji}と上達が早いです。`,
+        romaji: `Mainichi "${reading}" to jōtatsu ga hayai desu.`,
+        en: `If you ${m} every day, you’ll improve faster.`,
+      },
+      {
+        jp: `${kanji}のコツを教えてください。`,
+        romaji: `"${reading}" no kotsu o oshiete kudasai.`,
+        en: `Please tell me tips for "${m}".`,
+      },
+    ];
+  }
+
+  if (level === "N3") {
+    return [
+      {
+        jp: `この${kanji}について、あなたの意見を聞かせてください。`,
+        romaji: `Kono "${reading}" ni tsuite, anata no iken o kikasete kudasai.`,
+        en: `Tell me your opinion about this "${m}".`,
+      },
+      {
+        jp: `${kanji}を変えるのは簡単ではありません。`,
+        romaji: `"${reading}" o kaeru no wa kantan dewa arimasen.`,
+        en: `Changing "${m}" isn’t easy.`,
+      },
+      {
+        jp: `失敗から学ぶことが${kanji}につながります。`,
+        romaji: `Shippai kara manabu koto ga "${reading}" ni tsunagarimasu.`,
+        en: `Learning from failure leads to "${m}".`,
+      },
+    ];
+  }
+
+  // N2
+  return [
+    {
+      jp: `${kanji}を説明するには、まず前提を整理する必要があります。`,
+      romaji: `"${reading}" o setsumei suru ni wa, mazu zentei o seiri suru hitsuyō ga arimasu.`,
+      en: `To explain "${m}", we first need to clarify the assumptions.`,
+    },
+    {
+      jp: `この${kanji}は、背景と根拠を示すと説得力が増します。`,
+      romaji: `Kono "${reading}" wa, haikei to konkyo o shimesu to settokuryoku ga mashimasu.`,
+      en: `This "${m}" becomes more convincing when you show context and evidence.`,
+    },
+    {
+      jp: `${kanji}の違いを具体例で比較してみましょう。`,
+      romaji: `"${reading}" no chigai o gutairei de hikaku shite mimashō.`,
+      en: `Let’s compare the differences in "${m}" using concrete examples.`,
+    },
+  ];
+}
+
+/** ---------- PARSER ---------- **/
+function parseWordList(raw) {
+  const lines = raw.split("\n").map(l => l.trim()).filter(Boolean);
+
+  let currentLevel = null;
+  let isPremium = false;
+
+  const out = [];
+  let id = 1;
+
+  for (const line of lines) {
+    if (line.startsWith("##")) {
+      if (line.includes("N4")) { currentLevel = "N4"; isPremium = false; }
+      else if (line.includes("N3")) { currentLevel = "N3"; isPremium = false; }
+      else if (line.includes("N2")) { currentLevel = "N2"; isPremium = false; }
+      continue;
+    }
+
+    const m = line.match(/^\d+\.\s*(.+?)\s*\((.+?)\)\s*-\s*(.+)$/);
+    if (!m) continue;
+
+    const kanji = m[1].trim();
+    const reading = m[2].trim();
+    const meaning = m[3].trim();
+
+    const pos = guessPOS(kanji);
+
+    out.push({
+      id: id++,
+      kanji,
+      reading,
+      meaning,
+      level: currentLevel || "N3",
+      premium: Boolean(isPremium),
+      pos,
+      examples: buildExamples(kanji, reading, meaning, currentLevel || "N3"),
+      tips: [
+        "Say it out loud 5 times with rhythm.",
+        "Write 2 original sentences using this word.",
+        "Review tomorrow + 3 days later (spaced repetition).",
+      ],
+    });
+  }
+
+  return out;
+}
+
+/** ---------- UI HELPERS ---------- **/
+function isSaved(id) {
+  return state.saved.has(id);
+}
+
+function populatePosFilter() {
+  const select = byId("posFilter");
+  if (!select) return;
+
+  select.innerHTML = `<option value="All">All POS</option>`;
+  const posSet = new Set(words.map(w => w.pos).filter(Boolean));
+  const list = Array.from(posSet).sort((a,b)=>a.localeCompare(b));
+  for (const p of list) {
+    const opt = document.createElement("option");
+    opt.value = p;
+    opt.textContent = p;
+    select.appendChild(opt);
+  }
+}
 
 function levelRank(level) {
   if (level === "N4") return 1;
   if (level === "N3") return 2;
   if (level === "N2") return 3;
-  return 9;
+  return 99;
 }
 
-/** ---------- THEME / PREMIUM ---------- **/
-function applyTheme() {
-  // 現状はダーク固定UIだけど、トグルの見た目だけ反映
-  byId("toggleTheme").textContent = state.dark ? "🌙" : "☀️";
-  saveBool(STORAGE_KEYS.THEME, state.dark);
-}
-function syncPremiumUI() {
-  byId("premiumState").textContent = state.premiumOn ? "ON" : "OFF";
-  saveBool(STORAGE_KEYS.PREMIUM, state.premiumOn);
-}
-
-/** ---------- FILTER / SORT ---------- **/
-function filteredWords() {
+/** ---------- FILTER + SORT ---------- **/
+function getFilteredWords() {
   const q = state.q.trim().toLowerCase();
+  let list = words.slice();
 
-  let list = WORDS.filter(w => {
-    if (!state.premiumOn && w.premium) return false; // premium OFFなら隠す
+  // premium toggle: if OFF, hide premium words (in this 50 set, none are premium—kept for compatibility)
+  if (!state.premiumOn) list = list.filter(w => !w.premium);
 
-    if (state.tab === "saved" && !state.saved.has(w.id)) return false;
+  if (state.tab === "saved") list = list.filter(w => state.saved.has(w.id));
 
-    if (state.level !== "ALL" && w.level !== state.level) return false;
-
-    if (!q) return true;
-
-    const blob = `${w.kanji} ${w.reading} ${w.meaning} ${w.level} ${w.category}`.toLowerCase();
-    return blob.includes(q);
-  });
-
-  if (state.sort === "LEVEL") {
-    list.sort((a,b) => levelRank(a.level) - levelRank(b.level) || a.kanji.localeCompare(b.kanji));
-  } else if (state.sort === "KANJI") {
-    list.sort((a,b) => a.kanji.localeCompare(b.kanji));
-  } else if (state.sort === "MEANING") {
-    list.sort((a,b) => a.meaning.localeCompare(b.meaning));
+  if (q) {
+    list = list.filter(w =>
+      w.kanji.toLowerCase().includes(q) ||
+      w.reading.toLowerCase().includes(q) ||
+      w.meaning.toLowerCase().includes(q) ||
+      (w.pos || "").toLowerCase().includes(q)
+    );
   }
+
+  if (state.level !== "All") list = list.filter(w => w.level === state.level);
+  if (state.pos !== "All") list = list.filter(w => w.pos === state.pos);
+
+  if (state.sort === "Level") {
+    list.sort((a,b) => levelRank(a.level) - levelRank(b.level) || a.kanji.localeCompare(b.kanji));
+  } else if (state.sort === "A-Z") {
+    list.sort((a,b) => a.kanji.localeCompare(b.kanji));
+  } else if (state.sort === "Saved") {
+    list.sort((a,b) => (isSaved(b.id) - isSaved(a.id)) || a.kanji.localeCompare(b.kanji));
+  }
+
   return list;
+}
+
+/** ---------- RENDER ---------- **/
+function render() {
+  const grid = byId("grid");
+  const empty = byId("emptyState");
+  const savedCount = byId("savedCount");
+  const premiumLabel = byId("premiumLabel");
+
+  if (savedCount) savedCount.textContent = String(state.saved.size);
+  if (premiumLabel) premiumLabel.textContent = state.premiumOn ? "ON" : "OFF";
+
+  const list = getFilteredWords();
+
+  if (!grid) return;
+
+  grid.innerHTML = "";
+  if (!list.length) {
+    empty && empty.classList.remove("hidden");
+    return;
+  }
+  empty && empty.classList.add("hidden");
+
+  for (const w of list) {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.dataset.id = String(w.id);
+
+    const savedClass = isSaved(w.id) ? "savedOn" : "";
+    const saveText = isSaved(w.id) ? "★ Saved" : "☆ Save";
+
+    card.innerHTML = `
+      <div class="cardTop">
+        <div>
+          <div class="cardKanji">${escapeHtml(w.kanji)}</div>
+          <div class="cardReading">${escapeHtml(w.reading)}</div>
+          <div class="cardMeaning">${escapeHtml(w.meaning)}</div>
+        </div>
+        <button class="saveSmall ${savedClass}" data-save="1" data-id="${w.id}">${saveText}</button>
+      </div>
+
+      <div class="tagRow">
+        <span class="tag level">${escapeHtml(w.level)}</span>
+        <span class="tag pos">${escapeHtml(w.pos)}</span>
+      </div>
+    `;
+
+    card.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-save='1']");
+      if (btn) return;
+      openModal(w.id);
+    });
+
+    card.querySelector("[data-save='1']").addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleSave(w.id);
+      render();
+    });
+
+    grid.appendChild(card);
+  }
 }
 
 /** ---------- SAVE ---------- **/
@@ -116,273 +388,207 @@ function toggleSave(id) {
   if (state.saved.has(id)) state.saved.delete(id);
   else state.saved.add(id);
   saveSet(STORAGE_KEYS.SAVED, state.saved);
-  byId("savedCount").textContent = String(state.saved.size);
 }
 
-/** ---------- RENDER CARDS ---------- **/
-function render() {
-  const grid = byId("grid");
-  const list = filteredWords();
+/** ---------- MODAL ---------- **/
+function openModal(id) {
+  const w = words.find(x => x.id === id);
+  if (!w) return;
 
-  grid.innerHTML = "";
-  if (list.length === 0) {
-    grid.innerHTML = `<div style="opacity:.7;padding:18px;">No words found.</div>`;
-    return;
+  state.modalWordId = id;
+
+  byId("mKanji") && (byId("mKanji").textContent = w.kanji);
+  byId("mReading") && (byId("mReading").textContent = w.reading);
+  byId("mMeaning") && (byId("mMeaning").textContent = w.meaning);
+
+  byId("mPosChip") && (byId("mPosChip").textContent = w.pos || "—");
+  byId("mLevelChip") && (byId("mLevelChip").textContent = w.level || "—");
+  byId("mPosLine") && (byId("mPosLine").textContent = w.pos || "—");
+
+  const premiumChip = byId("mPremiumChip");
+  if (premiumChip) {
+    if (w.premium) premiumChip.classList.remove("hidden");
+    else premiumChip.classList.add("hidden");
   }
 
-  list.forEach((word) => {
-    const card = document.createElement("div");
-    card.className = "card";
-
-    const isSaved = state.saved.has(word.id);
-
-    card.innerHTML = `
-      <div class="card__kanji">${escapeHtml(word.kanji)}</div>
-      <div class="card__reading">${escapeHtml(word.reading || "")}</div>
-      <div class="card__meaning">${escapeHtml(word.meaning)}</div>
-
-      <div class="card__row">
-        <span class="pill">${escapeHtml(word.level)}</span>
-        <button class="savebtn ${isSaved ? "saved" : ""}" data-save="${word.id}">
-          ${isSaved ? "★ Saved" : "☆ Save"}
-        </button>
-      </div>
-    `;
-
-    // card click => open modal
-    card.addEventListener("click", () => openModal(word));
-
-    // save button click should NOT open modal
-    card.querySelector('[data-save]').addEventListener("click", (e) => {
-      e.stopPropagation();
-      toggleSave(word.id);
-      render();
+  const ex = byId("mExamples");
+  if (ex) {
+    ex.innerHTML = "";
+    (w.examples || []).forEach(item => {
+      const box = document.createElement("div");
+      box.className = "example";
+      box.innerHTML = `
+        <div class="jp">${escapeHtml(item.jp)}</div>
+        <div class="romaji">${escapeHtml(item.romaji)}</div>
+        <div class="en">${escapeHtml(item.en)}</div>
+      `;
+      ex.appendChild(box);
     });
-
-    grid.appendChild(card);
-  });
-}
-
-/** ---------- MODAL UI (2nd screenshot style) ---------- **/
-function jpWordTypeLabel(category) {
-  const c = (category || "").toLowerCase();
-  if (c.includes("noun")) return "名詞";
-  if (c.includes("verb")) return "動詞";
-  if (c.includes("adverb")) return "副詞";
-  if (c.includes("na")) return "形容動詞";
-  if (c.includes("i-")) return "形容詞";
-  if (c.includes("adj")) return "形容詞";
-  return "—";
-}
-function enWordTypeLabel(category) {
-  const c = (category || "").toLowerCase();
-  if (c.includes("noun")) return "Noun";
-  if (c.includes("verb")) return "Verb";
-  if (c.includes("adverb")) return "Adverb";
-  if (c.includes("na")) return "Na-adjective";
-  if (c.includes("i-")) return "I-adjective";
-  if (c.includes("adj")) return "Adjective";
-  return "—";
-}
-
-/** ---------- Better Examples (quality upgrade) ---------- **/
-function buildBetterExamples(word) {
-  // “とりあえず質を上げる”テンプレ版（不自然な連発を避ける）
-  // ※最高品質にするなら WORDS に examples を持たせるのが最強
-  if (Array.isArray(word.examples) && word.examples.length) {
-    return word.examples.slice(0, 3);
   }
 
-  const type = (word.category || "").toLowerCase();
-
-  if (type.includes("verb")) {
-    return [
-      {
-        jp: `毎日少しずつ「${word.kanji}」練習をしています。`,
-        reading: `${word.reading}（単語）`,
-        en: `I practice "${word.meaning}" a little every day.`,
-      },
-      {
-        jp: `「${word.kanji}」前に、目的をはっきりさせましょう。`,
-        reading: `${word.reading}（単語）`,
-        en: `Before you ${word.meaning}, make your goal clear.`,
-      },
-    ];
+  const tips = byId("mTips");
+  if (tips) {
+    tips.innerHTML = "";
+    (w.tips || []).forEach(t => {
+      const li = document.createElement("li");
+      li.textContent = t;
+      tips.appendChild(li);
+    });
   }
 
-  if (type.includes("noun")) {
-    return [
-      {
-        jp: `「${word.kanji}」について先生に質問しました。`,
-        reading: `${word.reading}（単語）`,
-        en: `I asked the teacher about "${word.meaning}".`,
-      },
-      {
-        jp: `この場面では「${word.kanji}」が必要です。`,
-        reading: `${word.reading}（単語）`,
-        en: `"${capitalize(word.meaning)}" is necessary in this situation.`,
-      },
-    ];
+  const saveBtn = byId("modalSave");
+  if (saveBtn) {
+    saveBtn.textContent = isSaved(w.id) ? "★ Saved" : "☆ Save Word";
+    saveBtn.onclick = () => {
+      toggleSave(w.id);
+      saveBtn.textContent = isSaved(w.id) ? "★ Saved" : "☆ Save Word";
+      render();
+    };
   }
 
-  if (type.includes("adj") || type.includes("na")) {
-    return [
-      {
-        jp: `その説明は「${word.kanji}」なので、もう一度聞きたいです。`,
-        reading: `${word.reading}（単語）`,
-        en: `Because the explanation is "${word.meaning}", I want to hear it again.`,
-      },
-      {
-        jp: `もっと「${word.kanji}」に言い換えてみましょう。`,
-        reading: `${word.reading}（単語）`,
-        en: `Let’s rephrase it to be more "${word.meaning}".`,
-      },
-    ];
+  const copyBtn = byId("modalCopy");
+  if (copyBtn) {
+    copyBtn.onclick = async () => {
+      const text = `${w.kanji} (${w.reading}) - ${w.meaning}`;
+      try {
+        await navigator.clipboard.writeText(text);
+        copyBtn.textContent = "Copied!";
+        setTimeout(()=> (copyBtn.textContent="Copy"), 900);
+      } catch {
+        copyBtn.textContent = "Copy failed";
+        setTimeout(()=> (copyBtn.textContent="Copy"), 900);
+      }
+    };
   }
 
-  return [
-    {
-      jp: `「${word.kanji}」の使い方を確認しましょう。`,
-      reading: `${word.reading}（単語）`,
-      en: `Let’s review how to use "${word.meaning}".`,
-    },
-    {
-      jp: `この単語は会話でもよく出てきます。`,
-      reading: `${word.reading}（単語）`,
-      en: `This word appears often in conversation.`,
-    },
-  ];
+  // POS editor (optional)
+  const posSelect = byId("posSelect");
+  if (posSelect) posSelect.value = w.pos || "Noun";
+
+  const posSaveBtn = byId("posSaveBtn");
+  if (posSaveBtn && posSelect) {
+    posSaveBtn.onclick = () => {
+      const newPos = posSelect.value;
+      w.pos = newPos;
+
+      const key = `${w.kanji}__${w.reading}`;
+      state.posOverrides[key] = newPos;
+      saveJson(STORAGE_KEYS.POS_OVERRIDES, state.posOverrides);
+
+      byId("mPosLine") && (byId("mPosLine").textContent = newPos);
+      byId("mPosChip") && (byId("mPosChip").textContent = newPos);
+
+      populatePosFilter();
+      render();
+
+      posSaveBtn.textContent = "Saved!";
+      setTimeout(() => (posSaveBtn.textContent = "Save POS"), 800);
+    };
+  }
+
+  showModal(true);
 }
 
-function buildStudyTips(word) {
-  const tips = [
-    { icon: "💡", text: "Write this word 10 times and say it out loud." },
-    { icon: "🎯", text: "Make 3 original sentences using this word." },
-    { icon: "🎧", text: "Listen for it in videos/podcasts and note the context." },
-  ];
-  if (word.level === "N2" || word.premium) {
-    tips.unshift({ icon: "🧠", text: "Compare it with similar words and write the nuance difference." });
-  }
-  return tips;
-}
-
-function openModal(word) {
-  state.selected = word;
-
-  byId("kzModalTitle").textContent = word.kanji;
-  byId("kzModalReading").textContent = word.reading || "";
-  byId("kzModalMeaning").textContent = word.meaning || "";
-
-  byId("kzModalLevel").textContent = word.level || "—";
-  byId("kzModalType").textContent = jpWordTypeLabel(word.category);
-  byId("kzModalTypePill").textContent = enWordTypeLabel(word.category);
-
-  const examples = buildBetterExamples(word);
-  const exWrap = byId("kzModalExamples");
-  exWrap.innerHTML = "";
-  examples.forEach((ex) => {
-    const div = document.createElement("div");
-    div.className = "kz-example";
-    div.innerHTML = `
-      <div class="kz-example__jp">${escapeHtml(ex.jp)}</div>
-      <div class="kz-example__reading">${escapeHtml(ex.reading || "")}</div>
-      <div class="kz-example__en">${escapeHtml(ex.en)}</div>
-    `;
-    exWrap.appendChild(div);
-  });
-
-  const tips = buildStudyTips(word);
-  const tipWrap = byId("kzModalTips");
-  tipWrap.innerHTML = "";
-  tips.forEach((t) => {
-    const li = document.createElement("li");
-    li.innerHTML = `<span class="kz-tip__icon">${t.icon}</span><span>${escapeHtml(t.text)}</span>`;
-    tipWrap.appendChild(li);
-  });
-
-  // Save button
-  const saveBtn = byId("kzModalSaveBtn");
-  const isSaved = state.saved.has(word.id);
-  saveBtn.textContent = isSaved ? "Saved" : "Save Word";
-  saveBtn.onclick = () => {
-    toggleSave(word.id);
-    openModal(word); // refresh modal
-    render();        // refresh list
-  };
-
-  // Copy
-  const copyBtn = byId("kzModalCopyBtn");
-  copyBtn.onclick = async () => {
-    const text = `${word.kanji}（${word.reading}）: ${word.meaning}\n` +
-      examples.map(e => `- ${e.jp} / ${e.en}`).join("\n");
-    try {
-      await navigator.clipboard.writeText(text);
-      copyBtn.textContent = "Copied!";
-      setTimeout(() => (copyBtn.textContent = "Copy"), 900);
-    } catch {
-      copyBtn.textContent = "Copy failed";
-      setTimeout(() => (copyBtn.textContent = "Copy"), 900);
-    }
-  };
-
-  // Show modal
+function showModal(open) {
   const modal = byId("modal");
-  modal.classList.remove("hidden");
-  modal.setAttribute("aria-hidden", "false");
+  if (!modal) return;
 
-  // Close handlers
-  modal.querySelectorAll("[data-close]").forEach((el) => (el.onclick = closeModal));
-  document.addEventListener("keydown", onModalEsc);
-}
-
-function onModalEsc(e) {
-  if (e.key === "Escape") closeModal();
-}
-
-function closeModal() {
-  const modal = byId("modal");
-  modal.classList.add("hidden");
-  modal.setAttribute("aria-hidden", "true");
-  document.removeEventListener("keydown", onModalEsc);
+  if (open) {
+    modal.classList.remove("hidden");
+    modal.setAttribute("aria-hidden", "false");
+  } else {
+    modal.classList.add("hidden");
+    modal.setAttribute("aria-hidden", "true");
+    state.modalWordId = null;
+  }
 }
 
 /** ---------- EVENTS ---------- **/
 function wireEvents() {
-  // Tabs
-  document.querySelectorAll(".tab").forEach((btn) => {
+  document.querySelectorAll(".tab").forEach(btn => {
     btn.addEventListener("click", () => {
-      document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
       btn.classList.add("active");
       state.tab = btn.dataset.tab;
       render();
     });
   });
 
-  byId("searchInput").addEventListener("input", (e) => {
-    state.q = e.target.value;
-    render();
-  });
+  const search = byId("searchInput");
+  if (search) {
+    search.addEventListener("input", (e) => {
+      state.q = e.target.value;
+      render();
+    });
+  }
 
-  byId("levelFilter").addEventListener("change", (e) => {
-    state.level = e.target.value;
-    render();
-  });
+  const level = byId("levelFilter");
+  if (level) {
+    level.addEventListener("change", (e) => {
+      state.level = e.target.value;
+      render();
+    });
+  }
 
-  byId("sortBy").addEventListener("change", (e) => {
-    state.sort = e.target.value;
-    render();
-  });
+  const pos = byId("posFilter");
+  if (pos) {
+    pos.addEventListener("change", (e) => {
+      state.pos = e.target.value;
+      render();
+    });
+  }
 
-  byId("toggleTheme").addEventListener("click", () => {
-    state.dark = !state.dark;
-    applyTheme();
-  });
+  const sort = byId("sortBy");
+  if (sort) {
+    sort.addEventListener("change", (e) => {
+      state.sort = e.target.value;
+      render();
+    });
+  }
 
-  byId("togglePremium").addEventListener("click", () => {
-    state.premiumOn = !state.premiumOn;
-    syncPremiumUI();
-    render();
+  const themeBtn = byId("toggleTheme");
+  if (themeBtn) {
+    themeBtn.addEventListener("click", () => {
+      state.dark = !state.dark;
+      saveBool(STORAGE_KEYS.THEME, state.dark);
+      applyTheme();
+    });
+  }
+
+  const premBtn = byId("togglePremium");
+  if (premBtn) {
+    premBtn.addEventListener("click", () => {
+      state.premiumOn = !state.premiumOn;
+      saveBool(STORAGE_KEYS.PREMIUM, state.premiumOn);
+      render();
+    });
+  }
+
+  const close1 = byId("closeModal");
+  if (close1) close1.addEventListener("click", () => showModal(false));
+
+  const close2 = byId("modalClose");
+  if (close2) close2.addEventListener("click", () => showModal(false));
+
+  const modal = byId("modal");
+  if (modal) {
+    modal.addEventListener("click", (e) => {
+      if (e.target && e.target.dataset && e.target.dataset.close) showModal(false);
+    });
+  }
+
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") showModal(false);
   });
+}
+
+/** ---------- THEME ---------- **/
+function applyTheme() {
+  const btn = byId("toggleTheme");
+  if (btn) btn.textContent = state.dark ? "🌙" : "☀️";
+
+  // if your CSS uses body.dark, keep this
+  document.body.classList.toggle("dark", state.dark);
 }
 
 /** ---------- INIT ---------- **/
@@ -390,12 +596,20 @@ function init() {
   state.saved = loadSet(STORAGE_KEYS.SAVED);
   state.dark = loadBool(STORAGE_KEYS.THEME, true);
   state.premiumOn = loadBool(STORAGE_KEYS.PREMIUM, false);
+  state.posOverrides = loadJson(STORAGE_KEYS.POS_OVERRIDES, {});
 
-  byId("savedCount").textContent = String(state.saved.size);
+  words = parseWordList(RAW_WORD_LIST);
 
+  // apply POS overrides
+  for (const w of words) {
+    const key = `${w.kanji}__${w.reading}`;
+    if (state.posOverrides[key]) w.pos = state.posOverrides[key];
+  }
+
+  populatePosFilter();
   applyTheme();
-  syncPremiumUI();
   wireEvents();
   render();
 }
+
 init();
