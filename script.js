@@ -289,7 +289,7 @@ function parseWordList(raw) {
       continue;
     }
 
-    const m = line.match(/^\d+\.\s*(.+?)\s*\((.+?)\)\s*-\s*(.+)$/);
+    const m = line.match(/^(\d+)\.\s*(.+?)\s*\((.+?)\)\s*[-–—]\s*(.+)$/);
     if (!m) continue;
 
     const kanji = m[1].trim();
