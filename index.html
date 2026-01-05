@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kaizen.Dojo</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="dark">
+  <header class="header">
+    <div class="container header-inner">
+      <h1 class="logo">Kaizen.Dojo</h1>
+
+      <div class="header-actions">
+        <button id="toggleTheme" class="icon-btn" aria-label="Toggle theme">🌙</button>
+        <button id="goSaved" class="icon-btn" aria-label="Saved">🔖</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main">
+    <div class="tabs">
+      <button class="tab is-active" data-tab="words">単語帳</button>
+      <button class="tab" data-tab="saved">保存した単語</button>
+      <button class="tab" data-tab="coaching">Coaching</button>
+    </div>
+
+    <!-- WORDS -->
+    <section id="tab-words" class="tab-panel is-active">
+      <div class="stats">
+        <div class="stat-card">
+          <div id="statWords" class="stat-num">0</div>
+          <div class="stat-label">Words</div>
+        </div>
+        <div class="stat-card">
+          <div id="statSaved" class="stat-num green">0</div>
+          <div class="stat-label">Saved</div>
+        </div>
+      </div>
+
+      <p class="muted">Master Japanese vocabulary step by step</p>
+
+      <div class="search">
+        <input id="searchInput" type="text" placeholder="Search by word, reading, or meaning" />
+      </div>
+
+      <div id="filters" class="filters"></div>
+
+      <div id="wordList" class="list"></div>
+    </section>
+
+    <!-- SAVED -->
+    <section id="tab-saved" class="tab-panel">
+      <h2 class="h2">保存した単語</h2>
+      <p class="muted">保存した単語がここに表示されます</p>
+      <div id="savedList" class="list"></div>
+
+      <div id="savedEmpty" class="empty">
+        <div class="empty-icon">🔖</div>
+        <div class="empty-title">保存した単語はありません</div>
+        <div class="muted">単語カードのブックマークアイコンをクリックして保存しましょう</div>
+      </div>
+    </section>
+
+    <!-- COACHING -->
+    <section id="tab-coaching" class="tab-panel">
+      <h2 class="hero-title">Online lesson</h2>
+      <p class="muted hero-sub">Transform your Japanese with personalized guidance</p>
+
+      <div class="card big">
+        <div class="card-head">
+          <div class="badge blue">🎥</div>
+          <div>
+            <div class="card-title">1-on-1 Lesson</div>
+            <div class="price"><span class="price-num">$12</span> <span class="muted">60 minutes</span></div>
+          </div>
+        </div>
+        <ul class="bullets">
+          <li>✅ Personalized curriculum</li>
+          <li>✅ Native speaker guidance</li>
+          <li>✅ Flexible scheduling</li>
+        </ul>
+        <button class="btn primary">📅 Book Your Session</button>
+      </div>
+
+      <div class="card big">
+        <div class="card-head">
+          <div class="badge purple">✨</div>
+          <div>
+            <div class="card-title">Quick Question</div>
+            <div class="price"><span class="price-num purple">$5</span> <span class="muted">Get answers</span></div>
+          </div>
+        </div>
+        <ul class="bullets">
+          <li>✅ Expert answers</li>
+          <li>✅ 24-hour response</li>
+          <li>✅ Detailed explanations</li>
+        </ul>
+        <button class="btn purple">Ask a Question</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL -->
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-backdrop" data-close="1"></div>
+    <div class="modal-card">
+      <div class="modal-top">
+        <div>
+          <div class="modal-word">
+            <span id="mKanji" class="m-kanji">意識</span>
+            <span id="mLevel" class="pill">N3</span>
+            <span id="mCat" class="pill ghost">Noun</span>
+          </div>
+          <div id="mReading" class="m-reading">いしき</div>
+          <div id="mMeaning" class="m-meaning">consciousness, awareness</div>
+        </div>
+        <button class="icon-btn" data-close="1">✕</button>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Example Sentences</div>
+        <div id="mExamples" class="examples"></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Study Tips</div>
+        <div class="tips">
+          <div>💡 Practice writing this word 10 times to memorize the kanji.</div>
+          <div>🎯 Try using this word in 3 different sentences today.</div>
+          <div>🔊 Practice pronunciation by listening to native speakers.</div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="mSaveBtn" class="btn primary">Save Word</button>
+        <button class="btn" data-close="1">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer muted">日本語を学ぼう</footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
