@@ -53,16 +53,72 @@ const RAW_WORD_LIST = `
 40. 責任 (せきにん) - responsibility
 
 ## N2
-41. 抽象的 (ちゅうしょうてき) - abstract
-42. 具体的 (ぐたいてき) - concrete, specific
-43. 適切 (てきせつ) - appropriate, suitable
-44. 曖昧 (あいまい) - ambiguous, vague
-45. 概念 (がいねん) - concept, notion
-46. 背景 (はいけい) - background, context
-47. 根拠 (こんきょ) - basis, grounds
-48. 論理 (ろんり) - logic
-49. 主張 (しゅちょう) - assertion, claim
-50. 視点 (してん) - viewpoint, perspective
+41. 生産（せいさん） - production
+42. 消費（しょうひ） - consumption
+43. 需要（じゅよう） - demand
+44. 供給（きょうきゅう） - supply
+45. 増加（ぞうか） - increase
+46. 減少（げんしょう） - decrease
+47. 発展（はってん） - development
+48. 進歩（しんぽ） - progress
+49. 改善（かいぜん） - improvement
+50. 向上（こうじょう） - improvement, enhancement
+
+51. 低下（ていか） - decline
+52. 悪化（あっか） - deterioration
+53. 維持（いじ） - maintenance
+54. 安定（あんてい） - stability
+55. 変動（へんどう） - fluctuation
+56. 混乱（こんらん） - confusion
+57. 調整（ちょうせい） - adjustment
+58. 管理（かんり） - management
+59. 実施（じっし） - implementation
+60. 達成（たっせい） - achievement
+
+61. 実行（じっこう） - execution
+62. 完成（かんせい） - completion
+63. 過程（かてい） - process
+64. 手段（しゅだん） - means, method
+65. 方法（ほうほう） - method
+66. 対応（たいおう） - response
+67. 協力（きょうりょく） - cooperation
+68. 対立（たいりつ） - confrontation
+69. 競争（きょうそう） - competition
+70. 争い（あらそい） - conflict
+
+71. 一致（いっち） - agreement
+72. 相違（そうい） - difference
+73. 類似（るいじ） - similarity
+74. 比較（ひかく） - comparison
+75. 区別（くべつ） - distinction
+76. 分類（ぶんるい） - classification
+77. 統一（とういつ） - unity
+78. 独立（どくりつ） - independence
+79. 依存（いぞん） - dependence
+80. 関連（かんれん） - relation
+
+81. 関与（かんよ） - involvement
+82. 影響力（えいきょうりょく） - influence
+83. 促進（そくしん） - promotion
+84. 抑制（よくせい） - suppression
+85. 妥協（だきょう） - compromise
+86. 譲歩（じょうほ） - concession
+87. 主導（しゅどう） - leadership
+88. 停滞（ていたい） - stagnation
+89. 繁栄（はんえい） - prosperity
+90. 衰退（すいたい） - decline
+
+91. 創造（そうぞう） - creation
+92. 革新（かくしん） - innovation
+93. 改革（かいかく） - reform
+94. 革命（かくめい） - revolution
+95. 構造（こうぞう） - structure
+96. 機能（きのう） - function
+97. 性質（せいしつ） - nature, property
+98. 特徴（とくちょう） - feature
+99. 著しい（いちじるしい） - remarkable
+100. 極めて（きわめて） - extremely
+
 `;
 
 /** ---------- STATE ---------- **/
