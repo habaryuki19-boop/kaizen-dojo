@@ -1,81 +1,103 @@
 <!doctype html>
 <html lang="ja">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Kaizen Japanese</title>
-    <link rel="stylesheet" href="./style.css" />
-  </head>
-  <body>
-    <header class="topbar">
-      <div class="brand">
-        <div class="logo">改善</div>
-        <div class="brandText">
-          <div class="title">Kaizen Japanese</div>
-          <div class="subtitle">Vocabulary Trainer</div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Kaizen Japanese - Vocabulary Trainer</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand__icon">改</div>
+      <div class="brand__text">
+        <div class="brand__title">Kaizen Japanese</div>
+        <div class="brand__sub">Vocabulary Trainer</div>
+      </div>
+    </div>
+
+    <div class="topbar__right">
+      <button id="toggleTheme" class="chip" title="Toggle theme">🌙</button>
+      <button id="togglePremium" class="chip chip--premium">Premium: <span id="premiumState">OFF</span></button>
+    </div>
+  </header>
+
+  <main class="wrap">
+
+    <section class="controls">
+      <div class="tabs">
+        <button class="tab active" data-tab="words">Words</button>
+        <button class="tab" data-tab="saved">Saved <span id="savedCount" class="badge">0</span></button>
+      </div>
+
+      <div class="filters">
+        <input id="searchInput" class="input" placeholder="Search: 漢字 / ひらがな / meaning" />
+
+        <select id="levelFilter" class="select">
+          <option value="ALL">All levels</option>
+          <option value="N4">N4</option>
+          <option value="N3">N3</option>
+          <option value="N2">N2</option>
+        </select>
+
+        <select id="sortBy" class="select">
+          <option value="LEVEL">Sort: Level</option>
+          <option value="KANJI">Sort: Kanji</option>
+          <option value="MEANING">Sort: Meaning</option>
+        </select>
+      </div>
+    </section>
+
+    <section id="grid" class="grid"></section>
+
+  </main>
+
+  <!-- Modal (Word Detail like your 2nd screenshot) -->
+  <div id="modal" class="kz-modal hidden" aria-hidden="true">
+    <div class="kz-modal__backdrop" data-close></div>
+
+    <div class="kz-modal__panel" role="dialog" aria-modal="true" aria-labelledby="kzModalTitle">
+      <button class="kz-modal__x" aria-label="Close" data-close>✕</button>
+
+      <div class="kz-modal__header">
+        <div class="kz-modal__titlewrap">
+          <div class="kz-modal__kanji" id="kzModalTitle">競争</div>
+          <div class="kz-modal__reading" id="kzModalReading">きょうそう</div>
+          <div class="kz-modal__meaning" id="kzModalMeaning">competition</div>
+        </div>
+
+        <div class="kz-modal__badges">
+          <span class="kz-badge" id="kzModalLevel">N3</span>
+          <span class="kz-badge kz-badge--soft" id="kzModalType">名詞</span>
         </div>
       </div>
 
-      <div class="controls">
-        <button id="toggleTheme" class="btn ghost" type="button" title="Toggle theme">
-          🌙/☀️
-        </button>
-
-        <button id="togglePremium" class="btn primary" type="button" title="Toggle premium (demo)">
-          Premium: <span id="premiumState">OFF</span>
-        </button>
-      </div>
-    </header>
-
-    <main class="container">
-      <section class="toolbar">
-        <div class="tabs">
-          <button class="tab active" data-tab="words" type="button">Words</button>
-          <button class="tab" data-tab="saved" type="button">
-            Saved <span id="savedCount" class="pill">0</span>
-          </button>
+      <div class="kz-modal__body">
+        <div class="kz-section">
+          <div class="kz-section__title">WORD TYPE</div>
+          <div class="kz-pill" id="kzModalTypePill">Noun</div>
         </div>
 
-        <div class="searchRow">
-          <input
-            id="searchInput"
-            class="search"
-            type="text"
-            placeholder="Search: 漢字 / ひらがな / meaning"
-            autocomplete="off"
-          />
-
-          <select id="levelFilter" class="select" aria-label="level filter">
-            <option value="ALL">All levels</option>
-            <option value="N4">N4</option>
-            <option value="N3">N3</option>
-            <option value="N2">N2</option>
-            <option value="PREMIUM">Premium only</option>
-          </select>
-
-          <select id="sortBy" class="select" aria-label="sort">
-            <option value="LEVEL">Sort: Level</option>
-            <option value="KANJI">Sort: Kanji</option>
-          </select>
+        <div class="kz-section">
+          <div class="kz-section__title">EXAMPLE SENTENCES</div>
+          <div class="kz-examples" id="kzModalExamples"></div>
         </div>
-      </section>
 
-      <section id="list" class="grid"></section>
-
-      <section id="savedList" class="grid hidden"></section>
-
-      <div id="modal" class="modal hidden" data-close="1">
-        <div class="modalCard" role="dialog" aria-modal="true" aria-label="Word detail">
-          <button class="modalClose" data-close="1" aria-label="Close">✕</button>
-          <div class="modalBody" id="modalBody"></div>
+        <div class="kz-section">
+          <div class="kz-section__title">STUDY TIPS</div>
+          <ul class="kz-tips" id="kzModalTips"></ul>
         </div>
       </div>
-    </main>
 
-    <footer class="footer">
-      <span>Tip: Click a card for details. ★ to save.</span>
-    </footer>
+      <div class="kz-modal__footer">
+        <button class="kz-btn kz-btn--primary" id="kzModalSaveBtn">Save Word</button>
+        <button class="kz-btn" id="kzModalCopyBtn">Copy</button>
+        <button class="kz-btn kz-btn--ghost" data-close>Close</button>
+      </div>
+    </div>
+  </div>
 
-    <script src="./script.js"></script>
-  </body>
+  <script src="script.js"></script>
+</body>
 </html>
